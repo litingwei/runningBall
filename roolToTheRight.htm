@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title></title>
+  <style>
+    canvas {
+      box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script type="text/javascript">
+const canvas=document.querySelector('#canvas');
+const ctx=canvas.getContext('2d');
+
+const w=canvas.width=600;
+const h=canvas.height=400;
+
+class Ball {
+  constructor(x,y,r){
+    this.x=x;
+    this.y=y;
+    this.r=r;
+    this.color=`rgb(${~~Ball.rgFn([55, 255])},${~~Ball.rgFn([55, 255])},${~~Ball.rgFn([55, 255])})`;
+    return this;
+  }
+  render(ctx){
+    ctx.save();
+    ctx.translate(this.x,this.y);
+    ctx.fillStyle=this.color;
+    ctx.beginPath();
+    ctx.arc(0,0,this.r,0,2*Math.PI);
+    ctx.fill();
+    ctx.restore();
+    return this;
+  }
+  static rgFn(arr){
+    let max=Math.max(...arr),
+        min=Math.min(...arr);
+        return Math.random()*(max-min)+min;
+  }
+}
+//const ball1=new Ball(100, 100, 30).render(ctx);
+class SuperBall extends Ball{
+  constructor(x,y,r){
+    super(x,y,r);
+    this.vy=SuperBall.rgFn([2,4]);//子类会继承父类的静态方法
+    this.vx=SuperBall.rgFn([2,4]);
+    this.g=SuperBall.rgFn([0.2,0.4]);
+    this.a=0;
+    this.b=0;
+    return this;
+  }
+  move(ctx){
+    this.y+=this.vy;
+    this.x+=this.vx;
+    this.vy+=this.g;
+    //this.vx+=this.g;
+    let currentY=this.vy*-0.75;
+    let currentX=this.vx*-0.75;
+    if(this.y+this.r>=h){
+      this.y=h-this.r;
+      if(Math.abs(currentY-this.a)<0.01) return false;
+      this.a=this.vy*=-0.75;
+    }
+    if(this.x+this.r>=w){
+      this.x=w-this.r;
+      if(Math.abs(currentX-this.b)<0.01) return false;
+      this.b=this.vx*=-0.75;
+    }
+    if(this.x<=this.r){
+      this.x=this.r;
+    }
+    ctx.clearRect(0,0,w,h);
+    super.render(ctx);//调用父类方法
+    return true;
+  }
+}
+//const ball1=new SuperBall(100, 100, 30).render(ctx);
+
+let ball, timer;
+canvas.onclick=function(e){
+  let x=e.offsetX,y=e.offsetY;
+  let r=~~Ball.rgFn([25,55]);
+  ctx.clearRect(0,0,w,h);
+  ball=new SuperBall(x,y,r).render(ctx);
+  timer=setInterval(function(){
+    if(ball.move(ctx)){  
+    }
+    else{
+      clearInterval(timer);
+    }
+  },16)
+}
+
+  </script>
+</body>
+</html>
